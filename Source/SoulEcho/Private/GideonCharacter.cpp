@@ -1,0 +1,105 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#include "GideonCharacter.h"
+#include <Components/CapsuleComponent.h>
+#include <GameFramework/SpringArmComponent.h>
+#include <Camera/CameraComponent.h>
+#include <GameFramework/CharacterMovementComponent.h>
+
+// Sets default values
+AGideonCharacter::AGideonCharacter()
+{
+ 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
+	AutoPossessPlayer = EAutoReceiveInput::Player0;
+
+	// Then our character will turn it's face to whereever we go.
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	GetCharacterMovement()->RotationRate = FRotator{ 0.0f,400.0f,0.0f };
+
+	GetCapsuleComponent()->SetCapsuleHalfHeight(CapsuleHalfHeight);
+	GetCapsuleComponent()->SetGenerateOverlapEvents(true);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
+	GetCapsuleComponent()->SetCapsuleRadius(CapsuleRadius);
+
+	SetRootComponent(GetCapsuleComponent());
+
+	ArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Arm"));
+	ArmComponent->TargetArmLength = DefaultArmLenght;
+	ArmComponent->bUsePawnControlRotation = true; //This should be set to true in order to rotate camera.
+	ArmComponent->SetupAttachment(GetRootComponent());
+
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	CameraComponent->SetupAttachment(ArmComponent);
+}
+
+// Called when the game starts or when spawned
+void AGideonCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void AGideonCharacter::GoForwardBackward(float Scale)
+{
+	if (GetController() && Scale != 0.0f) {
+		const FRotator YawRotation{ 0.0f, GetControlRotation().Yaw, 0.0f };
+		const FVector Direction{ FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X) };
+		AddMovementInput(Direction, Scale);
+	}
+}
+
+void AGideonCharacter::GoLeftRight(float Scale)
+{
+	if (GetController() && Scale != 0.0f) {
+		const FRotator YawRotation{ 0.0f, GetControlRotation().Yaw, 0.0f };
+		const FVector Direction{ FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y) };
+		AddMovementInput(Direction, Scale);
+	}
+}
+
+void AGideonCharacter::LookLeftRight(float Scale)
+{
+	if (Scale != 0.0f && GetController()) {
+		AddControllerYawInput(Scale);
+	}
+}
+
+void AGideonCharacter::LookUpDown(float Scale)
+{
+	if (Scale != 0.0f && GetController()) {
+		AddControllerPitchInput(Scale);
+	}
+}
+
+// Called every frame
+void AGideonCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
+// Called to bind functionality to input
+void AGideonCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	PlayerInputComponent->BindAxis(FName("Forward"), this, &AGideonCharacter::GoForwardBackward);
+	PlayerInputComponent->BindAxis(FName("Backward"), this, &AGideonCharacter::GoForwardBackward);
+	PlayerInputComponent->BindAxis(FName("TurnRight"), this, &AGideonCharacter::GoLeftRight);
+	PlayerInputComponent->BindAxis(FName("TurnLeft"), this, &AGideonCharacter::GoLeftRight);
+
+	PlayerInputComponent->BindAxis(FName("LookUpDown"), this, &AGideonCharacter::LookUpDown);
+	PlayerInputComponent->BindAxis(FName("LookRightLeft"), this, &AGideonCharacter::LookLeftRight);
+
+	PlayerInputComponent->BindAction(FName("Jump"), EInputEvent::IE_Pressed, this, &AGideonCharacter::Jump);
+}
+
+void AGideonCharacter::Jump()
+{
+	Super::Jump();
+}
