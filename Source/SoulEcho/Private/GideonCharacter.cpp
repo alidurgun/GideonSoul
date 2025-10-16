@@ -6,6 +6,8 @@
 #include <Camera/CameraComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
 
+#include "Chaos/AABBTree.h"
+
 // Sets default values
 AGideonCharacter::AGideonCharacter()
 {
@@ -77,6 +79,40 @@ void AGideonCharacter::LookUpDown(float Scale)
 	}
 }
 
+void AGideonCharacter::TakeWeapon()
+{
+	if (OverlappedMesh && GetMesh() && CharacterState == ECharacterStates::ECS_Unequipped)
+	{
+		EquipWeapon(OverlappedMesh, FName("WeaponSocket"));
+		WeaponMesh = OverlappedMesh;
+		CharacterState = ECharacterStates::ECS_1HEquipped;
+	}
+}
+
+void AGideonCharacter::EquipWeapon(UStaticMeshComponent* MeshComponent, FName SocketName)
+{
+	const FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
+			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::SnapToTarget,
+			false);
+		
+	MeshComponent->AttachToComponent(GetMesh(), Rules, SocketName);
+}
+
+void AGideonCharacter::ArmDisarm()
+{
+	if (CharacterState == ECharacterStates::ECS_Disarm && WeaponMesh)
+	{
+		EquipWeapon(WeaponMesh, FName("WeaponSocket"));
+		CharacterState = ECharacterStates::ECS_1HEquipped;
+	}
+	else
+	{
+		EquipWeapon(WeaponMesh, FName("DisarmSocket"));
+		CharacterState = ECharacterStates::ECS_Disarm;
+	}
+}
+
 // Called every frame
 void AGideonCharacter::Tick(float DeltaTime)
 {
@@ -97,6 +133,9 @@ void AGideonCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis(FName("LookRightLeft"), this, &AGideonCharacter::LookLeftRight);
 
 	PlayerInputComponent->BindAction(FName("Jump"), EInputEvent::IE_Pressed, this, &AGideonCharacter::Jump);
+
+	PlayerInputComponent->BindAction(FName("EquipWeapon"),EInputEvent::IE_Pressed, this, &AGideonCharacter::TakeWeapon);
+	PlayerInputComponent->BindAction(FName("ArmDisarm"), IE_Pressed, this, &AGideonCharacter::ArmDisarm);
 }
 
 void AGideonCharacter::Jump()

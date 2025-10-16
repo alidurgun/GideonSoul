@@ -4,6 +4,8 @@
 #include "Weapon.h"
 #include <Components/BoxComponent.h>
 
+#include "GameFramework/SpringArmComponent.h"
+
 AWeapon::AWeapon()
 {
 	WeaponBox = CreateDefaultSubobject<UBoxComponent>(TEXT("WeaponBox"));
@@ -19,6 +21,13 @@ AWeapon::AWeapon()
 void AWeapon::WeaponBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 }
+
+void AWeapon::Equip(USceneComponent* SceneComponent, const FName SocketName) const
+{
+	const FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget,EAttachmentRule::SnapToTarget,EAttachmentRule::SnapToTarget,false);
+	ItemMesh->AttachToComponent(SceneComponent, Rules,SocketName);
+}
+
 
 void AWeapon::BeginPlay()
 {

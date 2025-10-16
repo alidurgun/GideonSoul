@@ -3,6 +3,7 @@
 
 #include "Item.h"
 #include <Components/SphereComponent.h>
+#include <GideonCharacter.h>
 
 // Sets default values
 AItem::AItem()
@@ -43,10 +44,18 @@ void AItem::Tick(float DeltaTime)
 void AItem::ItemSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Display, TEXT("ItemSphereBeginOverlap!"));
+	if (AGideonCharacter* GideonCharacter = Cast<AGideonCharacter>(OtherActor))
+	{
+		GideonCharacter->SetOverlappedMesh(ItemMesh);
+	}
 }
 
 void AItem::ItemSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	UE_LOG(LogTemp, Display, TEXT("ItemSphereEndOverlap!"));
+	if (AGideonCharacter* GideonCharacter = Cast<AGideonCharacter>(OtherActor))
+	{
+		GideonCharacter->SetOverlappedMesh(nullptr);
+	}
 }
 

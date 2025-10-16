@@ -19,7 +19,8 @@ class SOULECHO_API AWeapon : public AItem
 public:
 	AWeapon();
 
-	void WeaponBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	virtual void WeaponBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	// This is responsible of collision along the sword itself. This box component will cover all blade itself.
 	UPROPERTY(EditAnywhere)
@@ -30,6 +31,8 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	USceneComponent* WeaponEnd;
+
+	void Equip(USceneComponent* SceneComponent, const FName SocketName) const;
 
 protected:
 	// Called when the game starts or when spawned
