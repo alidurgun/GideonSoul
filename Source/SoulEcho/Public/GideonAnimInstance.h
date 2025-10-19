@@ -27,9 +27,6 @@ public:
 	// for the bulk of the work to be done in NativeThreadSafeUpdateAnimation.
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
-	UFUNCTION(BlueprintCallable)
-	void SetCombatStateCharacter(ECombatStates NewCombatState);
-
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	AGideonCharacter* Gideon;

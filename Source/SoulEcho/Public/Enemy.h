@@ -1,0 +1,34 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "HitInterface.h"
+#include "GameFramework/Character.h"
+#include "Enemy.generated.h"
+
+UCLASS()
+class SOULECHO_API AEnemy : public ACharacter, public IHitInterface
+{
+	GENERATED_BODY()
+
+public:
+	// Sets default values for this character's properties
+	AEnemy();
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void GetHit(const FVector& ImpactPoint) override;
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+private:
+	float CapsuleHalfHeight{ 89.5f };
+	float CapsuleRadius{ 34.0f };
+};

@@ -5,8 +5,10 @@
 #include <GameFramework/SpringArmComponent.h>
 #include <Camera/CameraComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
+#include <Weapon.h>
 
-#include "Chaos/AABBTree.h"
+//#include "Chaos/AABBTree.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 AGideonCharacter::AGideonCharacter()
@@ -43,6 +45,16 @@ AGideonCharacter::AGideonCharacter()
 	AttackNames.Add(FName("Attack1"));
 	AttackNames.Add(FName("Attack2"));
 	AttackNames.Add(FName("Attack3"));
+}
+
+void AGideonCharacter::SetWeaponCollision(ECollisionEnabled::Type NewCollision)
+{
+	
+	if (WeaponClass)
+	{
+		WeaponClass->WeaponBox->SetGenerateOverlapEvents(!(WeaponClass->WeaponBox->GetGenerateOverlapEvents()));
+		WeaponClass->WeaponBox->SetCollisionEnabled(NewCollision);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -176,4 +188,13 @@ void AGideonCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void AGideonCharacter::Jump()
 {
 	Super::Jump();
+}
+
+void AGideonCharacter::SetWeaponClass(UPrimitiveComponent* WeaponComponent)
+{
+	WeaponClass=nullptr;
+	if (WeaponComponent)
+	{
+		WeaponClass = Cast<AWeapon>(WeaponComponent);
+	}
 }
