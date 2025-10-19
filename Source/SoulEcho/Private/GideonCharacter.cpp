@@ -39,6 +39,10 @@ AGideonCharacter::AGideonCharacter()
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(ArmComponent);
+
+	AttackNames.Add(FName("Attack1"));
+	AttackNames.Add(FName("Attack2"));
+	AttackNames.Add(FName("Attack3"));
 }
 
 // Called when the game starts or when spawned
@@ -49,7 +53,8 @@ void AGideonCharacter::BeginPlay()
 
 void AGideonCharacter::GoForwardBackward(float Scale)
 {
-	if (GetController() && Scale != 0.0f) {
+	if (CanMove(Scale))
+	{
 		const FRotator YawRotation{ 0.0f, GetControlRotation().Yaw, 0.0f };
 		const FVector Direction{ FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X) };
 		AddMovementInput(Direction, Scale);
@@ -58,7 +63,8 @@ void AGideonCharacter::GoForwardBackward(float Scale)
 
 void AGideonCharacter::GoLeftRight(float Scale)
 {
-	if (GetController() && Scale != 0.0f) {
+	if (CanMove(Scale))
+	{
 		const FRotator YawRotation{ 0.0f, GetControlRotation().Yaw, 0.0f };
 		const FVector Direction{ FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y) };
 		AddMovementInput(Direction, Scale);
@@ -89,7 +95,7 @@ void AGideonCharacter::TakeWeapon()
 	}
 }
 
-void AGideonCharacter::EquipWeapon(UStaticMeshComponent* MeshComponent, FName SocketName)
+void AGideonCharacter::EquipWeapon(UStaticMeshComponent* MeshComponent, FName SocketName) const
 {
 	const FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
 			EAttachmentRule::SnapToTarget,
@@ -111,6 +117,33 @@ void AGideonCharacter::ArmDisarm()
 		EquipWeapon(WeaponMesh, FName("DisarmSocket"));
 		CharacterState = ECharacterStates::ECS_Disarm;
 	}
+}
+
+void AGideonCharacter::Attack()
+{
+	if (CanAttack())
+	{
+		// play montage
+		int32 index = FMath::RandRange(0,AttackNames.Num() - 1);
+		UAnimInstance* anim {GetMesh()->GetAnimInstance()};
+		if (anim && AttackMontage)
+		{
+			anim->Montage_Play(AttackMontage);
+			anim->Montage_JumpToSection(AttackNames[index], AttackMontage);
+
+			CombatState = ECombatStates::ECS_Attacking;
+		}
+	}
+}
+
+bool AGideonCharacter::CanMove(float Scale)
+{
+	return GetController() && Scale != 0.0f && CombatState != ECombatStates::ECS_Attacking;
+}
+
+bool AGideonCharacter::CanAttack()
+{
+	return CombatState != ECombatStates::ECS_Attacking && !AttackNames.IsEmpty() && (CharacterState == ECharacterStates::ECS_1HEquipped || CharacterState == ECharacterStates::ECS_2HEquipped);
 }
 
 // Called every frame
@@ -136,6 +169,8 @@ void AGideonCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAction(FName("EquipWeapon"),EInputEvent::IE_Pressed, this, &AGideonCharacter::TakeWeapon);
 	PlayerInputComponent->BindAction(FName("ArmDisarm"), IE_Pressed, this, &AGideonCharacter::ArmDisarm);
+
+	PlayerInputComponent->BindAction(FName("Attack"), IE_Pressed, this, &AGideonCharacter::Attack);
 }
 
 void AGideonCharacter::Jump()

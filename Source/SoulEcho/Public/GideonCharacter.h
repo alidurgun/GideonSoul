@@ -29,6 +29,9 @@ public:
 
 	FORCEINLINE void SetOverlappedMesh(UStaticMeshComponent* overlapMesh){ this->OverlappedMesh = overlapMesh; }
 
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void SetCombatState(ECombatStates NewCombatState) { this->CombatState = NewCombatState; }
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -42,8 +45,12 @@ private:
 	void LookLeftRight(float Scale);
 	void LookUpDown(float Scale);
 	void TakeWeapon();
-	void EquipWeapon(UStaticMeshComponent* MeshComponent, FName SocketName);
+	void EquipWeapon(UStaticMeshComponent* MeshComponent, FName SocketName) const;
 	void ArmDisarm();
+	void Attack();
+
+	bool CanMove(float Scale);
+	bool CanAttack();
 
 	UPROPERTY()
 	USpringArmComponent* ArmComponent;
@@ -61,4 +68,13 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	TEnumAsByte<ECharacterStates> CharacterState { ECharacterStates::ECS_Unequipped };
+
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
+	TEnumAsByte<ECombatStates> CombatState { ECombatStates::ECS_Free };
+
+	//UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = "true"))
+	TArray<FName> AttackNames;
+
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = "true"))
+	UAnimMontage* AttackMontage;
 };

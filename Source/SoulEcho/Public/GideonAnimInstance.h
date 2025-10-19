@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include <CharacterStates.h>
 #include "GideonAnimInstance.generated.h"
 
 class AGideonCharacter;
@@ -25,6 +26,9 @@ public:
 	// Native update override point. It is usually a good idea to simply gather data in this step and 
 	// for the bulk of the work to be done in NativeThreadSafeUpdateAnimation.
 	void NativeUpdateAnimation(float DeltaSeconds) override;
+
+	UFUNCTION(BlueprintCallable)
+	void SetCombatStateCharacter(ECombatStates NewCombatState);
 
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))

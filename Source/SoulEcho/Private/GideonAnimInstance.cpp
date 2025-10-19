@@ -24,3 +24,11 @@ void UGideonAnimInstance::NativeUpdateAnimation(float DeltaTimeX)
 		IsFalling = GideonMovement->IsFalling();
 	}
 }
+
+void UGideonAnimInstance::SetCombatStateCharacter(ECombatStates NewCombatState)
+{
+	if (Gideon)
+	{
+		Gideon->SetCombatState(NewCombatState);
+	}
+}
