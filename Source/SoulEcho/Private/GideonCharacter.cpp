@@ -5,10 +5,8 @@
 #include <GameFramework/SpringArmComponent.h>
 #include <Camera/CameraComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
-#include <Weapon.h>
-
-//#include "Chaos/AABBTree.h"
-#include "Components/BoxComponent.h"
+#include <Sword.h>
+#include <Components/BoxComponent.h>
 
 // Sets default values
 AGideonCharacter::AGideonCharacter()
@@ -45,15 +43,16 @@ AGideonCharacter::AGideonCharacter()
 	AttackNames.Add(FName("Attack1"));
 	AttackNames.Add(FName("Attack2"));
 	AttackNames.Add(FName("Attack3"));
+
+	WeaponClass = nullptr;
 }
 
 void AGideonCharacter::SetWeaponCollision(ECollisionEnabled::Type NewCollision)
 {
-	
 	if (WeaponClass)
 	{
-		WeaponClass->WeaponBox->SetGenerateOverlapEvents(!(WeaponClass->WeaponBox->GetGenerateOverlapEvents()));
-		WeaponClass->WeaponBox->SetCollisionEnabled(NewCollision);
+		WeaponClass->GetSwordBox()->SetGenerateOverlapEvents(!(WeaponClass->GetSwordBox()->GetGenerateOverlapEvents()));
+		WeaponClass->GetSwordBox()->SetCollisionEnabled(NewCollision);
 	}
 }
 
@@ -99,10 +98,9 @@ void AGideonCharacter::LookUpDown(float Scale)
 
 void AGideonCharacter::TakeWeapon()
 {
-	if (OverlappedMesh && GetMesh() && CharacterState == ECharacterStates::ECS_Unequipped)
+	if (WeaponClass && GetMesh() && CharacterState == ECharacterStates::ECS_Unequipped)
 	{
-		EquipWeapon(OverlappedMesh, FName("WeaponSocket"));
-		WeaponMesh = OverlappedMesh;
+		WeaponClass->Equip(GetMesh(),FName("WeaponSocket"));
 		CharacterState = ECharacterStates::ECS_1HEquipped;
 	}
 }
@@ -119,14 +117,14 @@ void AGideonCharacter::EquipWeapon(UStaticMeshComponent* MeshComponent, FName So
 
 void AGideonCharacter::ArmDisarm()
 {
-	if (CharacterState == ECharacterStates::ECS_Disarm && WeaponMesh)
+	if (CharacterState == ECharacterStates::ECS_Disarm && WeaponClass)
 	{
-		EquipWeapon(WeaponMesh, FName("WeaponSocket"));
+		EquipWeapon(WeaponClass->GetSwordMesh(), FName("WeaponSocket"));
 		CharacterState = ECharacterStates::ECS_1HEquipped;
 	}
 	else
 	{
-		EquipWeapon(WeaponMesh, FName("DisarmSocket"));
+		EquipWeapon(WeaponClass->GetSwordMesh(), FName("DisarmSocket"));
 		CharacterState = ECharacterStates::ECS_Disarm;
 	}
 }
@@ -188,13 +186,4 @@ void AGideonCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void AGideonCharacter::Jump()
 {
 	Super::Jump();
-}
-
-void AGideonCharacter::SetWeaponClass(UPrimitiveComponent* WeaponComponent)
-{
-	WeaponClass=nullptr;
-	if (WeaponComponent)
-	{
-		WeaponClass = Cast<AWeapon>(WeaponComponent);
-	}
 }

@@ -9,7 +9,7 @@
 
 class USpringArmComponent;
 class UCameraComponent;
-class AWeapon;
+class ASword;
 
 UCLASS()
 class SOULECHO_API AGideonCharacter : public ACharacter
@@ -27,10 +27,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void Jump() override;
-
-	FORCEINLINE void SetOverlappedMesh(UStaticMeshComponent* overlapMesh){ this->OverlappedMesh = overlapMesh; }
 	
-	void SetWeaponClass(UPrimitiveComponent* WeaponComponent);
+	FORCEINLINE void SetWeaponClass(ASword* WeaponComponent) { WeaponClass = WeaponComponent; }
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE void SetCombatState(ECombatStates NewCombatState) { this->CombatState = NewCombatState; }
@@ -67,13 +65,7 @@ private:
 	float DefaultArmLenght{ 400.0f };
 
 	UPROPERTY()
-	UStaticMeshComponent* OverlappedMesh;
-
-	UPROPERTY()
-	UStaticMeshComponent* WeaponMesh;
-
-	UPROPERTY()
-	AWeapon* WeaponClass;
+	ASword* WeaponClass;
 
 	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	TEnumAsByte<ECharacterStates> CharacterState { ECharacterStates::ECS_Unequipped };

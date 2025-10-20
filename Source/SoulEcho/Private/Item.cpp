@@ -46,8 +46,8 @@ void AItem::ItemSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 	//UE_LOG(LogTemp, Display, TEXT("ItemSphereBeginOverlap!"));
 	if (AGideonCharacter* GideonCharacter = Cast<AGideonCharacter>(OtherActor))
 	{
-		GideonCharacter->SetOverlappedMesh(ItemMesh);
-		GideonCharacter->SetWeaponClass(OverlappedComponent);
+		// GideonCharacter->SetOverlappedMesh(ItemMesh);
+		// GideonCharacter->SetWeaponClass(OverlappedComponent);
 	}
 }
 
@@ -56,8 +56,8 @@ void AItem::ItemSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	//UE_LOG(LogTemp, Display, TEXT("ItemSphereEndOverlap!"));
 	if (AGideonCharacter* GideonCharacter = Cast<AGideonCharacter>(OtherActor))
 	{
-		GideonCharacter->SetOverlappedMesh(nullptr);
-		GideonCharacter->SetWeaponClass(nullptr);
+		// GideonCharacter->SetOverlappedMesh(nullptr);
+		// GideonCharacter->SetWeaponClass(nullptr);
 	}
 }
 
