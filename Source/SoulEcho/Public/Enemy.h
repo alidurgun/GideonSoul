@@ -7,6 +7,8 @@
 #include "GameFramework/Character.h"
 #include "Enemy.generated.h"
 
+class UCharacterAttributes;
+
 UCLASS()
 class SOULECHO_API AEnemy : public ACharacter, public IHitInterface
 {
@@ -22,13 +24,18 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void GetHit(const FVector& ImpactPoint) override;
+	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 private:
-	float CapsuleHalfHeight{ 89.5f };
-	float CapsuleRadius{ 34.0f };
+	const float CapsuleHalfHeight{ 89.5f };
+	const float CapsuleRadius{ 34.0f };
+
+	UPROPERTY()
+	UCharacterAttributes* Attributes;
+	
+	const float DefaultAttributeValue { 100.0f };
 };

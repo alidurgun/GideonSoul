@@ -87,7 +87,7 @@ void ASword::SwordBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 	
 	if (IHitInterface* HitInterface = Cast<IHitInterface>(Hit.GetActor()))
 	{
-		HitInterface->GetHit(Hit.ImpactPoint);
+		HitInterface->Execute_GetHit(Hit.GetActor(), Hit.ImpactPoint);
 	}
 }
 

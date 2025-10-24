@@ -3,6 +3,7 @@
 
 #include "Enemy.h"
 
+#include "CharacterAttributes.h"
 #include "Components/CapsuleComponent.h"
 
 // Sets default values
@@ -20,13 +21,21 @@ AEnemy::AEnemy()
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetMesh()->SetGenerateOverlapEvents(true);
 
+	Attributes = CreateDefaultSubobject<UCharacterAttributes>(TEXT("Attributes"));
 }
 
 // Called when the game starts or when spawned
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	if (Attributes)
+	{
+		Attributes->GetMaxHealth() = DefaultAttributeValue;
+		Attributes->GetCurrentHealth() = DefaultAttributeValue;
+		Attributes->GetMaxStamina() = DefaultAttributeValue;
+		Attributes->GetCurrentStamina() = DefaultAttributeValue;
+	}
 }
 
 // Called every frame
@@ -43,7 +52,7 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void AEnemy::GetHit(const FVector& ImpactPoint)
+void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 {
 	UE_LOG(LogTemp,Warning,TEXT("GetHit Called from Enemy."));
 	const UWorld* World = GetWorld();
