@@ -8,6 +8,7 @@
 #include "Enemy.generated.h"
 
 class UCharacterAttributes;
+class UWidgetAttributes;
 
 UCLASS()
 class SOULECHO_API AEnemy : public ACharacter, public IHitInterface
@@ -26,6 +27,8 @@ public:
 
 	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
 
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -36,6 +39,9 @@ private:
 
 	UPROPERTY()
 	UCharacterAttributes* Attributes;
+
+	UPROPERTY()
+	UWidgetAttributes* WidgetAttributes;
 	
 	const float DefaultAttributeValue { 100.0f };
 };

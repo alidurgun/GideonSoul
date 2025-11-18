@@ -21,11 +21,14 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void Equip(USceneComponent* SceneComponent, const FName SocketName);
+	void Equip(USceneComponent* SceneComponent, const FName SocketName, AController* Instigator);
 
 	UFUNCTION()
 	virtual void SwordBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION()
+	void SwordBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
 	UFUNCTION()
 	virtual void SwordSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -56,4 +59,11 @@ protected:
 	USceneComponent* SwordBoxEnd;
 	
 	bool IsEquipped {false};
+	
+private:
+	UPROPERTY()
+	TArray<AActor*> ActorsToIgnore;
+
+	UPROPERTY()
+	AController* HitController;
 };

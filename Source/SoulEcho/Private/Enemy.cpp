@@ -4,6 +4,7 @@
 #include "Enemy.h"
 
 #include "CharacterAttributes.h"
+#include "WidgetAttributes.h"
 #include "Components/CapsuleComponent.h"
 
 // Sets default values
@@ -22,6 +23,9 @@ AEnemy::AEnemy()
 	GetMesh()->SetGenerateOverlapEvents(true);
 
 	Attributes = CreateDefaultSubobject<UCharacterAttributes>(TEXT("Attributes"));
+	
+	WidgetAttributes = CreateDefaultSubobject<UWidgetAttributes>(TEXT("WidgetAttributes"));
+	WidgetAttributes->SetupAttachment(GetRootComponent());
 }
 
 // Called when the game starts or when spawned
@@ -35,6 +39,11 @@ void AEnemy::BeginPlay()
 		Attributes->GetCurrentHealth() = DefaultAttributeValue;
 		Attributes->GetMaxStamina() = DefaultAttributeValue;
 		Attributes->GetCurrentStamina() = DefaultAttributeValue;
+		if (WidgetAttributes)
+		{
+			WidgetAttributes->SetVisibility(true);
+			WidgetAttributes->SetHealthPercentage(Attributes->GetCurrentHealth() / Attributes->GetMaxHealth());
+		}
 	}
 }
 
@@ -55,10 +64,29 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 {
 	UE_LOG(LogTemp,Warning,TEXT("GetHit Called from Enemy."));
-	const UWorld* World = GetWorld();
-	if (World)
+
+}
+
+float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	UE_LOG(LogTemp,Display,TEXT("DamageAmount = %f"),DamageAmount);
+	if (Attributes && WidgetAttributes)
 	{
-		DrawDebugSphere(World,ImpactPoint,20,20,FColor::Red,false, 5);
+		float &currentHealth = Attributes->GetCurrentHealth();
+		currentHealth = currentHealth - DamageAmount;
+		UE_LOG(LogTemp,Display,TEXT("CurrentHealth = %f"),currentHealth);
+		WidgetAttributes->SetHealthPercentage(currentHealth / Attributes->GetCurrentHealth());
+		if (currentHealth <= 0.0f)
+		{
+			//die function
+		}
+		else
+		{
+			// animation.
+		}
 	}
+
+	return DamageAmount;
 }
 

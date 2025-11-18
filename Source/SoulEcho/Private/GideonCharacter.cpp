@@ -98,9 +98,9 @@ void AGideonCharacter::LookUpDown(float Scale)
 
 void AGideonCharacter::TakeWeapon()
 {
-	if (WeaponClass && GetMesh() && CharacterState == ECharacterStates::ECS_Unequipped)
+	if (GetController() && WeaponClass && GetMesh() && CharacterState == ECharacterStates::ECS_Unequipped)
 	{
-		WeaponClass->Equip(GetMesh(),FName("WeaponSocket"));
+		WeaponClass->Equip(GetMesh(),FName("WeaponSocket"),GetController());
 		CharacterState = ECharacterStates::ECS_1HEquipped;
 	}
 }

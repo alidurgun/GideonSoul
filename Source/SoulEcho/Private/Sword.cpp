@@ -8,6 +8,7 @@
 #include <GideonCharacter.h>
 
 #include "HitInterface.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
@@ -45,6 +46,7 @@ void ASword::BeginPlay()
 	Super::BeginPlay();
 
 	SwordBox->OnComponentBeginOverlap.AddDynamic(this, &ASword::SwordBoxOverlap);
+	SwordBox->OnComponentEndOverlap.AddDynamic(this, &ASword::SwordBoxEndOverlap);
 	Sphere->OnComponentBeginOverlap.AddDynamic(this, &ASword::SwordSphereBeginOverlap);
 	Sphere->OnComponentEndOverlap.AddDynamic(this, &ASword::SwordSphereEndOverlap);
 }
@@ -55,7 +57,7 @@ void ASword::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ASword::Equip(USceneComponent* SceneComponent, const FName SocketName)
+void ASword::Equip(USceneComponent* SceneComponent, const FName SocketName, AController* Holder)
 {
 	const FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
 	                                                                  EAttachmentRule::SnapToTarget,
@@ -67,6 +69,8 @@ void ASword::Equip(USceneComponent* SceneComponent, const FName SocketName)
 		Sphere->SetCollisionEnabled((ECollisionEnabled::Type::NoCollision));
 		Sphere->SetGenerateOverlapEvents(false);
 	}
+
+	HitController = Holder;
 }
 
 void ASword::SwordBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -75,8 +79,7 @@ void ASword::SwordBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 {
 	const FVector start = SwordBoxStart->GetComponentLocation();
 	const FVector end = SwordBoxEnd->GetComponentLocation();
-
-	TArray<AActor*> ActorsToIgnore;
+	
 	FHitResult Hit;
 	
 	UKismetSystemLibrary::BoxTraceSingle(this, start, end, FVector(30.0f,30.0f,30.0f),
@@ -88,7 +91,15 @@ void ASword::SwordBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 	if (IHitInterface* HitInterface = Cast<IHitInterface>(Hit.GetActor()))
 	{
 		HitInterface->Execute_GetHit(Hit.GetActor(), Hit.ImpactPoint);
+		UGameplayStatics::ApplyDamage(Hit.GetActor(),20,HitController,this,UDamageType::StaticClass());
+		ActorsToIgnore.AddUnique(Hit.GetActor());
 	}
+}
+
+void ASword::SwordBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+								   UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	ActorsToIgnore.Empty();
 }
 
 void ASword::SwordSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
