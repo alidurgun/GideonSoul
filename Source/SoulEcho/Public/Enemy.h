@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <mutex>
-
 #include "CoreMinimal.h"
 #include "CharacterStates.h"
 #include "HitInterface.h"
@@ -39,6 +37,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Animations")
 	UAnimMontage* DeathMontage;
+
+	// to fire patrol request with time.
+	FTimerHandle PatrolTimer;
+
+	// timer callback function.
+	void PatrolTimerFinished();
 
 	FORCEINLINE const EActorState GetActorState() const { return ActorState; }
 protected:

@@ -38,6 +38,11 @@ AEnemy::AEnemy()
 	bUseControllerRotationYaw = false;
 }
 
+void AEnemy::PatrolTimerFinished()
+{
+	StartPatrol();
+}
+
 // Called when the game starts or when spawned
 void AEnemy::BeginPlay()
 {
@@ -119,7 +124,7 @@ void AEnemy::Tick(float DeltaTime)
 
 	if (InTargetRange(AcceptanceRadius, CurrentPatrolTarget))
 	{
-		StartPatrol();
+		GetWorldTimerManager().SetTimer(PatrolTimer,this,&AEnemy::PatrolTimerFinished,4.0f);
 	}
 	if (InTargetRange(AttackRadius, AttackTarget))
 	{
