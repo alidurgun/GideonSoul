@@ -7,6 +7,7 @@
 #include "WidgetAttributes.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include <AIController.h>
 
 // Sets default values
 AEnemy::AEnemy()
@@ -27,12 +28,26 @@ AEnemy::AEnemy()
 	
 	WidgetAttributes = CreateDefaultSubobject<UWidgetAttributes>(TEXT("WidgetAttributes"));
 	WidgetAttributes->SetupAttachment(GetRootComponent());
+
+	// enemy move related settings
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bUseControllerDesiredRotation = false;
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
+	bUseControllerRotationYaw = false;
 }
 
 // Called when the game starts or when spawned
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+
+	AIController = Cast<AAIController>(GetController());
+	if (AIController)
+	{
+		StartPatrol();
+	}
 
 	if (Attributes)
 	{
@@ -61,16 +76,40 @@ void AEnemy::Die()
 
 void AEnemy::StartPatrol()
 {
-	EnemyMutex.lock();
 	this->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-	EnemyMutex.unlock();
+	if (PatrolTargets.IsEmpty()) return;
+
+	EnemyState = ECombatStates::ECS_Patrolling;
+	
+	int32 patrolIndex = FMath::RandRange(0, PatrolTargets.Num() - 1);
+	CurrentPatrolTarget = PatrolTargets[patrolIndex];
+	// moveto target.
+	if (AIController && CurrentPatrolTarget)
+	{
+		FAIMoveRequest Request;
+		Request.SetGoalActor(CurrentPatrolTarget);
+		Request.SetAcceptanceRadius(20.0f);
+		Request.SetCanStrafe(false); // Important for proper rotation
+		Request.SetUsePathfinding(true);
+		Request.SetAllowPartialPath(true);
+		Request.SetRequireNavigableEndLocation(true);
+		
+		AIController->MoveTo(Request);
+	}
 }
 
 void AEnemy::ChaseEnemy()
 {
-	EnemyMutex.lock();
+	CurrentPatrolTarget = nullptr;
+	EnemyState = ECombatStates::ECS_Chasing;
 	this->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
-	EnemyMutex.unlock();
+}
+
+bool AEnemy::InTargetRange(float radius, AActor* target)
+{
+	if (target == nullptr) return false;
+	const float distance = (target->GetActorLocation()-GetActorLocation()).Size();
+	return distance <= radius;
 }
 
 // Called every frame
@@ -78,6 +117,14 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (InTargetRange(AcceptanceRadius, CurrentPatrolTarget))
+	{
+		StartPatrol();
+	}
+	if (InTargetRange(AttackRadius, AttackTarget))
+	{
+		// Attack Animation
+	}
 }
 
 // Called to bind functionality to input

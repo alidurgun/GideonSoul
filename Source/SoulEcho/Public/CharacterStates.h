@@ -21,5 +21,8 @@ enum class ECombatStates : uint8
 {
 	ECS_Free UMETA(DisplayName = "Out of Combat"),
 	ECS_GetHit UMETA(DisplayName = "GetHit"),
-	ECS_Attacking UMETA(DisplayName = "Attacking")
+	ECS_Attacking UMETA(DisplayName = "Attacking"),
+	ECS_Patrolling UMETA(DisplayName = "Patrolling"),
+	ECS_Chasing UMETA(DisplayName = "Chasing"),
+	ECS_Engaged UMETA(DisplayName = "Engaged")
 };

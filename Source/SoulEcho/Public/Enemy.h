@@ -13,6 +13,7 @@
 class UCharacterAttributes;
 class UWidgetAttributes;
 class UAnimMontage;
+class AAIController;
 
 UCLASS()
 class SOULECHO_API AEnemy : public ACharacter, public IHitInterface
@@ -40,8 +41,6 @@ public:
 	UAnimMontage* DeathMontage;
 
 	FORCEINLINE const EActorState GetActorState() const { return ActorState; }
-	
-	std::mutex EnemyMutex;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -55,6 +54,9 @@ private:
 
 	UPROPERTY()
 	UWidgetAttributes* WidgetAttributes;
+
+	UPROPERTY()
+	AAIController* AIController;
 	
 	const float DefaultAttributeValue { 100.0f };
 
@@ -70,4 +72,18 @@ private:
 	void StartPatrol();
 
 	void ChaseEnemy();
+
+	UPROPERTY(EditAnywhere, Category="AI Movement", meta=(AllowPrivateAccess = "true"))
+	TArray<AActor*> PatrolTargets;
+
+	UPROPERTY(BlueprintReadOnly, Category="AI Movement", meta=(AllowPrivateAccess = "true"))
+	AActor* CurrentPatrolTarget;
+
+	UPROPERTY(BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess = "true"))
+	AActor* AttackTarget;
+
+	const float AcceptanceRadius{ 120.0f };
+	const float AttackRadius{60.0f};
+
+	bool InTargetRange(float radius, AActor* target);
 };
