@@ -2,13 +2,17 @@
 
 #pragma once
 
+#include <mutex>
+
 #include "CoreMinimal.h"
+#include "CharacterStates.h"
 #include "HitInterface.h"
 #include "GameFramework/Character.h"
 #include "Enemy.generated.h"
 
 class UCharacterAttributes;
 class UWidgetAttributes;
+class UAnimMontage;
 
 UCLASS()
 class SOULECHO_API AEnemy : public ACharacter, public IHitInterface
@@ -29,6 +33,15 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+	UPROPERTY(EditAnywhere, Category="Animations")
+	UAnimMontage* HitReactMontage;
+
+	UPROPERTY(EditAnywhere, Category="Animations")
+	UAnimMontage* DeathMontage;
+
+	FORCEINLINE const EActorState GetActorState() const { return ActorState; }
+	
+	std::mutex EnemyMutex;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -44,4 +57,17 @@ private:
 	UWidgetAttributes* WidgetAttributes;
 	
 	const float DefaultAttributeValue { 100.0f };
+
+	const float WalkSpeed { 140.0f };
+	const float RunSpeed { 350.0f };
+
+	ECombatStates EnemyState{ECombatStates::ECS_Free};
+	
+	EActorState ActorState{EActorState::EAS_Alive};
+
+	void Die();
+
+	void StartPatrol();
+
+	void ChaseEnemy();
 };

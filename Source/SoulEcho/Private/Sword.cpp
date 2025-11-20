@@ -84,7 +84,7 @@ void ASword::SwordBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 	
 	UKismetSystemLibrary::BoxTraceSingle(this, start, end, FVector(30.0f,30.0f,30.0f),
 		SwordBoxStart->GetComponentRotation(),TraceTypeQuery1, false, ActorsToIgnore,
-		EDrawDebugTrace::ForDuration,Hit,true);
+		EDrawDebugTrace::None,Hit,true);
 
 	UE_LOG(LogTemp, Error, TEXT("WeaponBox Overlap!"));
 	

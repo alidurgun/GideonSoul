@@ -6,6 +6,7 @@
 #include "CharacterAttributes.h"
 #include "WidgetAttributes.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -47,6 +48,31 @@ void AEnemy::BeginPlay()
 	}
 }
 
+void AEnemy::Die()
+{
+	UAnimInstance* anim = GetMesh()->GetAnimInstance();
+	if (anim && DeathMontage)
+	{
+		anim->Montage_Play(DeathMontage);
+		anim->Montage_JumpToSection(FName("Death"), DeathMontage);
+		ActorState = EActorState::EAS_Dead;
+	}
+}
+
+void AEnemy::StartPatrol()
+{
+	EnemyMutex.lock();
+	this->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	EnemyMutex.unlock();
+}
+
+void AEnemy::ChaseEnemy()
+{
+	EnemyMutex.lock();
+	this->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+	EnemyMutex.unlock();
+}
+
 // Called every frame
 void AEnemy::Tick(float DeltaTime)
 {
@@ -70,20 +96,29 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,
 	AActor* DamageCauser)
 {
-	UE_LOG(LogTemp,Display,TEXT("DamageAmount = %f"),DamageAmount);
 	if (Attributes && WidgetAttributes)
 	{
 		float &currentHealth = Attributes->GetCurrentHealth();
-		currentHealth = currentHealth - DamageAmount;
+		currentHealth = FMath::Clamp(currentHealth - DamageAmount, 0.0f, Attributes->GetMaxHealth());
+		
 		UE_LOG(LogTemp,Display,TEXT("CurrentHealth = %f"),currentHealth);
 		WidgetAttributes->SetHealthPercentage(currentHealth / Attributes->GetCurrentHealth());
+		
 		if (currentHealth <= 0.0f)
 		{
-			//die function
+			Die();
+			SetLifeSpan(5.0f);
 		}
 		else
 		{
 			// animation.
+			UAnimInstance* anim = GetMesh()->GetAnimInstance();
+			if (anim && HitReactMontage)
+			{
+				anim->Montage_Play(HitReactMontage);
+				anim->Montage_JumpToSection(FName("GetHit"), HitReactMontage);
+				EnemyState = ECombatStates::ECS_GetHit;
+			}
 		}
 	}
 

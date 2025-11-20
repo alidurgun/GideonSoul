@@ -10,8 +10,16 @@ enum class ECharacterStates : uint8
 };
 
 UENUM(BlueprintType)
+enum class EActorState : uint8
+{
+	EAS_Alive UMETA(DisplayName = "Alive"),
+	EAS_Dead UMETA(DisplayName = "Dead")
+};
+
+UENUM(BlueprintType)
 enum class ECombatStates : uint8
 {
 	ECS_Free UMETA(DisplayName = "Out of Combat"),
+	ECS_GetHit UMETA(DisplayName = "GetHit"),
 	ECS_Attacking UMETA(DisplayName = "Attacking")
 };

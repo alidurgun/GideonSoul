@@ -3,20 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CharacterStates.h"
 #include "Animation/AnimInstance.h"
-#include "GideonAnimInstance.generated.h"
+#include "EnemyAnimInstance.generated.h"
 
-class AGideonCharacter;
-class UCharacterMovementComponent;
+class AEnemy;
 
 /**
  * 
  */
 UCLASS()
-class SOULECHO_API UGideonAnimInstance : public UAnimInstance
+class SOULECHO_API UEnemyAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
-	
+
 public:
 	// the below functions are the native overrides for each phase
 	// Native initialization override point
@@ -27,15 +27,12 @@ public:
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
 private:
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	AGideonCharacter* Gideon;
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	EActorState ActorState;
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UCharacterMovementComponent* GideonMovement;
+	UPROPERTY()
+	AEnemy* Enemy;
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float GroundSpeed;
-
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	bool IsFalling;
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	float EnemyGroundSpeed;
 };
