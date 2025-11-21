@@ -7,7 +7,9 @@
 #include "WidgetAttributes.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include <AIController.h>
+#include "AIController.h"
+
+#include "Perception/PawnSensingComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -36,11 +38,43 @@ AEnemy::AEnemy()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
+
+	// PawnSensingComponent
+	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>("PawnSensingComponent");
+	PawnSensingComponent->SightRadius = 1500.0f;
+	PawnSensingComponent->SetPeripheralVisionAngle(45.0f);
 }
 
 void AEnemy::PatrolTimerFinished()
 {
-	StartPatrol();
+	if (EnemyState == ECombatStates::ECS_Free || EnemyState == ECombatStates::ECS_Patrolling)
+		StartPatrol();
+}
+
+void AEnemy::PawnSeen(APawn* Pawn)
+{
+	if (PatrolTimer.IsValid())
+		GetWorldTimerManager().ClearTimer(PatrolTimer);
+	
+	if (Pawn->ActorHasTag("Player"))
+		AttackTarget = Pawn;
+	
+	if (AIController && AttackTarget)
+	{
+		if (InTargetRange(AttackRadius, AttackTarget))
+		{
+			EnemyState = ECombatStates::ECS_Attacking;
+			
+			// start attack
+			AttackToTarget();
+			GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::AttackToTarget, 3.5f);
+		}
+		else
+		{
+			EnemyState = ECombatStates::ECS_Chasing;
+			AIController->MoveToActor(AttackTarget);
+		}
+	}
 }
 
 // Called when the game starts or when spawned
@@ -51,7 +85,7 @@ void AEnemy::BeginPlay()
 	AIController = Cast<AAIController>(GetController());
 	if (AIController)
 	{
-		StartPatrol();
+		GetWorldTimerManager().SetTimer(PatrolTimer,this,&AEnemy::PatrolTimerFinished,4.0f);
 	}
 
 	if (Attributes)
@@ -65,6 +99,11 @@ void AEnemy::BeginPlay()
 			WidgetAttributes->SetVisibility(true);
 			WidgetAttributes->SetHealthPercentage(Attributes->GetCurrentHealth() / Attributes->GetMaxHealth());
 		}
+	}
+
+	if (PawnSensingComponent)
+	{
+		PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy::PawnSeen);
 	}
 }
 
@@ -81,6 +120,9 @@ void AEnemy::Die()
 
 void AEnemy::StartPatrol()
 {
+	if (AttackTimer.IsValid())
+		GetWorldTimerManager().ClearTimer(AttackTimer);
+	
 	this->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	if (PatrolTargets.IsEmpty()) return;
 
@@ -115,6 +157,11 @@ bool AEnemy::InTargetRange(float radius, AActor* target)
 	if (target == nullptr) return false;
 	const float distance = (target->GetActorLocation()-GetActorLocation()).Size();
 	return distance <= radius;
+}
+
+void AEnemy::AttackToTarget()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Attackting to Target."));
 }
 
 // Called every frame

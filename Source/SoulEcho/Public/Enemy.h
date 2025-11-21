@@ -12,6 +12,7 @@ class UCharacterAttributes;
 class UWidgetAttributes;
 class UAnimMontage;
 class AAIController;
+class UPawnSensingComponent;
 
 UCLASS()
 class SOULECHO_API AEnemy : public ACharacter, public IHitInterface
@@ -45,6 +46,14 @@ public:
 	void PatrolTimerFinished();
 
 	FORCEINLINE const EActorState GetActorState() const { return ActorState; }
+
+	// Callback function that will be called when the pawn has been seen.
+	// For the Delegate functions we should tag it with UFUNCTION.
+	UFUNCTION()
+	void PawnSeen(APawn* Pawn);
+
+	// Timer for attack.
+	FTimerHandle AttackTimer;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -61,6 +70,9 @@ private:
 
 	UPROPERTY()
 	AAIController* AIController;
+
+	UPROPERTY()
+	UPawnSensingComponent* PawnSensingComponent;
 	
 	const float DefaultAttributeValue { 100.0f };
 
@@ -87,7 +99,9 @@ private:
 	AActor* AttackTarget;
 
 	const float AcceptanceRadius{ 120.0f };
-	const float AttackRadius{60.0f};
+	const float AttackRadius{400.0f}; // she is archer
 
 	bool InTargetRange(float radius, AActor* target);
+
+	void AttackToTarget();
 };
