@@ -53,6 +53,7 @@ void AEnemy::PatrolTimerFinished()
 
 void AEnemy::PawnSeen(APawn* Pawn)
 {
+	UE_LOG(LogTemp, Warning, TEXT("PawnSeen"));
 	if (PatrolTimer.IsValid())
 		GetWorldTimerManager().ClearTimer(PatrolTimer);
 	
@@ -61,16 +62,9 @@ void AEnemy::PawnSeen(APawn* Pawn)
 	
 	if (AIController && AttackTarget)
 	{
-		if (InTargetRange(AttackRadius, AttackTarget))
+		if (!InTargetRange(AttackRadius,AttackTarget) && EnemyState != ECombatStates::ECS_Chasing)
 		{
-			EnemyState = ECombatStates::ECS_Attacking;
-			
-			// start attack
-			AttackToTarget();
-			GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::AttackToTarget, 3.5f);
-		}
-		else
-		{
+			UE_LOG(LogTemp, Warning, TEXT("Chasing the enemy"));
 			EnemyState = ECombatStates::ECS_Chasing;
 			AIController->MoveToActor(AttackTarget);
 		}
@@ -121,7 +115,10 @@ void AEnemy::Die()
 void AEnemy::StartPatrol()
 {
 	if (AttackTimer.IsValid())
+	{
 		GetWorldTimerManager().ClearTimer(AttackTimer);
+		AttackTimerValid = false;
+	}
 	
 	this->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	if (PatrolTargets.IsEmpty()) return;
@@ -161,7 +158,14 @@ bool AEnemy::InTargetRange(float radius, AActor* target)
 
 void AEnemy::AttackToTarget()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Attackting to Target."));
+	UE_LOG(LogTemp, Warning, TEXT("Attacking to Target."));
+
+	UAnimInstance* anim = GetMesh()->GetAnimInstance();	
+	if (AttackMontage && anim)
+	{
+		anim->Montage_Play(AttackMontage);
+		anim->Montage_JumpToSection(FName("Attack"), AttackMontage);
+	}
 }
 
 // Called every frame
@@ -169,13 +173,20 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (InTargetRange(AcceptanceRadius, CurrentPatrolTarget))
+	if (CurrentPatrolTarget && InTargetRange(AcceptanceRadius, CurrentPatrolTarget))
 	{
 		GetWorldTimerManager().SetTimer(PatrolTimer,this,&AEnemy::PatrolTimerFinished,4.0f);
 	}
-	if (InTargetRange(AttackRadius, AttackTarget))
+	if (AttackTarget && InTargetRange(AttackRadius, AttackTarget) && AIController)
 	{
 		// Attack Animation
+		AIController->StopMovement();
+
+		if (EnemyState != ECombatStates::ECS_Attacking)
+		{
+			EnemyState = ECombatStates::ECS_Attacking;
+			GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::AttackToTarget, 3.5f);
+		}
 	}
 }
 

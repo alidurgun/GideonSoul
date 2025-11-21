@@ -20,3 +20,11 @@ void UEnemyAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		EnemyGroundSpeed = Enemy->GetCharacterMovement()->Velocity.Size();
 	}
 }
+
+void UEnemyAnimInstance::ChangeEnemyCombatState(ECombatStates newState)
+{
+	if (Enemy)
+	{
+		Enemy->SetEnemyCombatState(newState);
+	}
+}

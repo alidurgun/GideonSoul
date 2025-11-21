@@ -39,6 +39,9 @@ public:
 	UPROPERTY(EditAnywhere, Category="Animations")
 	UAnimMontage* DeathMontage;
 
+	UPROPERTY(EditAnywhere, Category="Animations")
+	UAnimMontage* AttackMontage;
+
 	// to fire patrol request with time.
 	FTimerHandle PatrolTimer;
 
@@ -46,6 +49,7 @@ public:
 	void PatrolTimerFinished();
 
 	FORCEINLINE const EActorState GetActorState() const { return ActorState; }
+	FORCEINLINE void SetEnemyCombatState(const ECombatStates newState) { EnemyState = newState; }
 
 	// Callback function that will be called when the pawn has been seen.
 	// For the Delegate functions we should tag it with UFUNCTION.
@@ -54,6 +58,9 @@ public:
 
 	// Timer for attack.
 	FTimerHandle AttackTimer;
+
+	bool AttackTimerValid = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -79,6 +86,7 @@ private:
 	const float WalkSpeed { 140.0f };
 	const float RunSpeed { 350.0f };
 
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	ECombatStates EnemyState{ECombatStates::ECS_Free};
 	
 	EActorState ActorState{EActorState::EAS_Alive};

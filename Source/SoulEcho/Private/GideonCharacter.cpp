@@ -60,6 +60,8 @@ void AGideonCharacter::SetWeaponCollision(ECollisionEnabled::Type NewCollision)
 void AGideonCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Tags.Add("Player");
 }
 
 void AGideonCharacter::GoForwardBackward(float Scale)
