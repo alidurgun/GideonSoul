@@ -102,7 +102,7 @@ void AGideonCharacter::TakeWeapon()
 {
 	if (GetController() && WeaponClass && GetMesh() && CharacterState == ECharacterStates::ECS_Unequipped)
 	{
-		WeaponClass->Equip(GetMesh(),FName("WeaponSocket"),GetController());
+		WeaponClass->Equip(GetMesh(),FName("WeaponSocket"),GetController(), this);
 		CharacterState = ECharacterStates::ECS_1HEquipped;
 	}
 }

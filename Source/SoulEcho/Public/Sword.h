@@ -21,7 +21,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void Equip(USceneComponent* SceneComponent, const FName SocketName, AController* Instigator);
+	void Equip(USceneComponent* SceneComponent, const FName SocketName, AController* Instigator, AActor* WeaponOwner);
 
 	UFUNCTION()
 	virtual void SwordBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -38,6 +38,8 @@ public:
 	FORCEINLINE UBoxComponent* GetSwordBox() const { return SwordBox; }
 
 	FORCEINLINE UStaticMeshComponent* GetSwordMesh() const { return SwordMesh; }
+
+	FORCEINLINE AActor* GetWeaponOwner() const { return WeaponOwner; }
 	
 protected:
 	// Called when the game starts or when spawned
@@ -66,4 +68,7 @@ private:
 
 	UPROPERTY()
 	AController* HitController;
+
+	UPROPERTY()
+	AActor* WeaponOwner;
 };

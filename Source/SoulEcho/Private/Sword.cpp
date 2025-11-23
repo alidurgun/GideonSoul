@@ -57,7 +57,7 @@ void ASword::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ASword::Equip(USceneComponent* SceneComponent, const FName SocketName, AController* Holder)
+void ASword::Equip(USceneComponent* SceneComponent, const FName SocketName, AController* Holder, AActor* WeapHolder)
 {
 	const FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
 	                                                                  EAttachmentRule::SnapToTarget,
@@ -69,7 +69,8 @@ void ASword::Equip(USceneComponent* SceneComponent, const FName SocketName, ACon
 		Sphere->SetCollisionEnabled((ECollisionEnabled::Type::NoCollision));
 		Sphere->SetGenerateOverlapEvents(false);
 	}
-
+	
+	WeaponOwner = WeapHolder;
 	HitController = Holder;
 }
 
@@ -90,7 +91,7 @@ void ASword::SwordBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 	
 	if (IHitInterface* HitInterface = Cast<IHitInterface>(Hit.GetActor()))
 	{
-		HitInterface->Execute_GetHit(Hit.GetActor(), Hit.ImpactPoint);
+		HitInterface->Execute_GetHit(Hit.GetActor(), Hit.ImpactPoint, GetWeaponOwner());
 		UGameplayStatics::ApplyDamage(Hit.GetActor(),20,HitController,this,UDamageType::StaticClass());
 		ActorsToIgnore.AddUnique(Hit.GetActor());
 	}

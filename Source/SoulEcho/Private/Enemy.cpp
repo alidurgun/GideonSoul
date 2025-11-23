@@ -53,22 +53,8 @@ void AEnemy::PatrolTimerFinished()
 
 void AEnemy::PawnSeen(APawn* Pawn)
 {
-	UE_LOG(LogTemp, Warning, TEXT("PawnSeen"));
-	if (PatrolTimer.IsValid())
-		GetWorldTimerManager().ClearTimer(PatrolTimer);
-	
 	if (Pawn->ActorHasTag("Player"))
 		AttackTarget = Pawn;
-	
-	if (AIController && AttackTarget)
-	{
-		if (!InTargetRange(AttackRadius,AttackTarget) && EnemyState != ECombatStates::ECS_Chasing)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Chasing the enemy"));
-			EnemyState = ECombatStates::ECS_Chasing;
-			AIController->MoveToActor(AttackTarget);
-		}
-	}
 }
 
 // Called when the game starts or when spawned
@@ -148,6 +134,7 @@ void AEnemy::ChaseEnemy()
 	CurrentPatrolTarget = nullptr;
 	EnemyState = ECombatStates::ECS_Chasing;
 	this->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+	AIController->MoveToActor(AttackTarget);
 }
 
 bool AEnemy::InTargetRange(float radius, AActor* target)
@@ -178,24 +165,32 @@ void AEnemy::Tick(float DeltaTime)
 	{
 		GetWorldTimerManager().SetTimer(PatrolTimer,this,&AEnemy::PatrolTimerFinished,4.0f);
 	}
-	if (AttackTarget && InTargetRange(AttackRadius, AttackTarget) && AIController)
-	{
-		// Attack Animation
-		AIController->StopMovement();
-
-		if (EnemyState != ECombatStates::ECS_Attacking)
-		{
-			EnemyState = ECombatStates::ECS_Attacking;
-			GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::AttackToTarget, 3.5f);
-		}
-	}
 	if (EnemyState == ECombatStates::ECS_Attacking || EnemyState == ECombatStates::ECS_Chasing || EnemyState == ECombatStates::ECS_Engaged)
 	{
-		if (!InTargetRange(AggroRadius, AttackTarget))
+		if (AttackTarget && !InTargetRange(AggroRadius, AttackTarget))
 		{
 			AttackTarget = nullptr;
 			EnemyState = ECombatStates::ECS_Free;
-			StartPatrol();
+			GetWorldTimerManager().SetTimer(PatrolTimer,this,&AEnemy::PatrolTimerFinished,1.0f);
+		}
+	}
+	if (AttackTarget && InTargetRange(AggroRadius, AttackTarget))
+	{
+		if (AttackTarget && InTargetRange(AttackRadius, AttackTarget))
+		{
+			if (AIController)
+				AIController->StopMovement();
+
+			if (EnemyState != ECombatStates::ECS_Attacking)
+			{
+				EnemyState = ECombatStates::ECS_Attacking;
+				GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::AttackToTarget, 3.5f);
+			}
+		}
+
+		else if (AIController && AttackTarget && !InTargetRange(AttackRadius, AttackTarget) && EnemyState != ECombatStates::ECS_Chasing)
+		{
+			ChaseEnemy();
 		}
 	}
 }
@@ -207,10 +202,10 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
+void AEnemy::GetHit_Implementation(const FVector& ImpactPoint, AActor* HitActor)
 {
 	UE_LOG(LogTemp,Warning,TEXT("GetHit Called from Enemy."));
-
+	AttackTarget = HitActor;
 }
 
 float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,
