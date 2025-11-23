@@ -108,6 +108,7 @@ private:
 
 	const float AcceptanceRadius{ 120.0f };
 	const float AttackRadius{400.0f}; // she is archer
+	const float AggroRadius{700.0f};
 
 	bool InTargetRange(float radius, AActor* target);
 

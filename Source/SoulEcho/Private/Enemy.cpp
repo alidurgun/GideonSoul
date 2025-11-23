@@ -114,6 +114,7 @@ void AEnemy::Die()
 
 void AEnemy::StartPatrol()
 {
+	GetWorldTimerManager().SetTimer(PatrolTimer,this,&AEnemy::PatrolTimerFinished,4.0f);
 	if (AttackTimer.IsValid())
 	{
 		GetWorldTimerManager().ClearTimer(AttackTimer);
@@ -186,6 +187,15 @@ void AEnemy::Tick(float DeltaTime)
 		{
 			EnemyState = ECombatStates::ECS_Attacking;
 			GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::AttackToTarget, 3.5f);
+		}
+	}
+	if (EnemyState == ECombatStates::ECS_Attacking || EnemyState == ECombatStates::ECS_Chasing || EnemyState == ECombatStates::ECS_Engaged)
+	{
+		if (!InTargetRange(AggroRadius, AttackTarget))
+		{
+			AttackTarget = nullptr;
+			EnemyState = ECombatStates::ECS_Free;
+			StartPatrol();
 		}
 	}
 }
