@@ -57,6 +57,16 @@ void AEnemy::PawnSeen(APawn* Pawn)
 		AttackTarget = Pawn;
 }
 
+FVector AEnemy::GetRotationWarpTarget()
+{
+	if (AttackTarget)
+	{
+		return AttackTarget->GetActorLocation();
+	}
+	
+	return GetActorLocation();
+}
+
 // Called when the game starts or when spawned
 void AEnemy::BeginPlay()
 {

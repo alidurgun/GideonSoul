@@ -29,6 +29,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ChangeEnemyCombatState(ECombatStates newState);
 
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE AEnemy* GetEnemy() const { return Enemy; }
+
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	EActorState ActorState;
